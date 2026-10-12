@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<title>Sigil — the formal language for AI-to-AI communication</title>
+<meta name="description" content="Sigil is a formally specified language for machine-to-machine dialogue. Nine message types. Eleven-level operator precedence. Dependent types. Probability qualifiers. 298 passing tests in the shipped parser.">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Sigil — the formal language for AI-to-AI communication">
+<meta property="og:description" content="Nine message types. Eleven-level operator precedence. Dependent types. Probability qualifiers. 298 passing tests.">
+<meta property="og:image" content="/static/sigil/og-image-home.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sigillang.xyz/">
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "SoftwareApplication", "name": "Sigil",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Python 3.10+",
+      "description": "A formally specified language for AI-to-AI communication. Dependent types, probability qualifiers, 11-level operator precedence.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "softwareVersion": "0.5.0" },
+    { "@type": "Organization", "name": "Sigil", "url": "https://sigillang.xyz" }
+  ]
+}
+</script>
+
+<meta name="color-scheme" content="light dark">
+{# Round-10 — no-FOUC boot script. Reads localStorage before paint and
+   applies .theme--light to <html> if resolved light. #}
+<script src="/static/shared/theme-auto.js?v={{ asset_v }}"></script>
+<link rel="stylesheet" href="/static/shared/theme-auto.css?v={{ asset_v }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/static/sigil/tokens.css?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/sigil/sigil.theme.css?v={{ asset_v }}">
+
+<style>
+  /* =========================================================================
+     Sigil home composition — inline per brief §8 (no per-brand components.css)
+     ========================================================================= */
+  body {
+    background: var(--brand-bg);
+    color: var(--brand-fg);
+    font-family: var(--brand-font-body);
+    font-weight: 400;
+  }
+
+  /* --- type baseline reset (Plex Mono leads in display contexts) --- */
+  h1, h2, h3, h4, .display { font-family: var(--brand-font-display); font-weight: 400; letter-spacing: -0.005em; }
+  h2 { font-size: var(--ds-fs-6); line-height: 1.2; margin: 0 0 var(--ds-sp-5); }
+  h3 { font-size: var(--ds-fs-4); line-height: 1.25; margin: 0 0 var(--ds-sp-3); font-weight: 500; }
+  h4 { font-size: var(--ds-fs-3); line-height: 1.3; margin: 0 0 var(--ds-sp-2); font-weight: 500; }
+  p  { color: var(--brand-fg); }
+  a  { color: inherit; }
+
+  /* --- container --- */
+  .l-container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 var(--ds-sp-5); }
+  .l-container--narrow { max-width: 880px; }
+  .l-container--reading { max-width: 72ch; }
+
+  /* --- nav --- */
+  .c-nav {
+    position: sticky; top: 0; z-index: var(--ds-z-nav, 40);
+    background: color-mix(in oklab, var(--brand-bg) 82%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .c-nav__inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px var(--ds-sp-5);
+    max-width: 1280px; margin: 0 auto;
+  }
+  .c-nav__brand {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    font-family: var(--brand-font-mono); font-size: var(--ds-fs-3);
+    color: var(--brand-fg); text-decoration: none; letter-spacing: 0;
+  }
+  .c-nav__brand .mark {
+    color: var(--brand-accent); font-weight: 500;
+    font-size: 1.05em;
+  }
+  .c-nav__brand .mark::before { content: var(--brand-mark); }
+  .c-nav__brand .wordmark { font-weight: 500; }
+  .c-nav__brand .version {
+    font-size: var(--ds-fs-0); color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-mono);
+    margin-left: 4px;
+  }
+  .c-nav__links {
+    display: flex; gap: var(--ds-sp-6);
+    font-family: var(--brand-font-mono); font-size: var(--ds-fs-1);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-nav__links a { color: var(--brand-muted); text-decoration: none; }
+  .c-nav__links a:hover { color: var(--brand-fg); }
+  .c-nav__cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    font-family: var(--brand-font-mono); font-size: var(--ds-fs-1);
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-rule);
+    color: var(--brand-fg); text-decoration: none;
+    border-radius: var(--ds-r-1);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-nav__cta:hover { border-color: var(--brand-accent); }
+  .c-nav__cta::before { content: "$"; color: var(--brand-muted); }
+  @media (max-width: 880px) {
+    .c-nav__links { display: none; }
+  }
+
+  /* --- hero --- */
+  .l-hero {
+    padding: clamp(64px, 9vw, 128px) 0 clamp(48px, 7vw, 96px);
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .l-hero__crumbs {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-mono);
+    margin: 0 0 var(--ds-sp-6);
+  }
+  .l-hero__crumbs .v { color: var(--brand-accent-2); }
+  .l-hero__title {
+    font-family: var(--brand-font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 5.2vw, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--ds-sp-5);
+    max-width: 18ch;
+    color: var(--brand-fg);
+  }
+  .l-hero__lede {
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-3);
+    line-height: 1.65;
+    color: var(--brand-fg);
+    max-width: 64ch;
+    margin: 0 0 var(--ds-sp-7);
+  }
+  .l-hero__lede code {
+    font-family: var(--brand-font-mono);
+    font-size: 0.92em;
+    color: var(--brand-fg);
+    background: var(--brand-surface);
+    padding: 1px 6px;
+    border: 1px solid var(--brand-rule);
+    border-radius: 2px;
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .l-hero__code-wrap { margin: 0 0 var(--ds-sp-7); }
+  .l-hero__ctas {
+    display: flex; gap: var(--ds-sp-3); flex-wrap: wrap;
+    margin: 0 0 var(--ds-sp-6);
+  }
+  .l-hero__meta {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-mono);
+    line-height: 2;
+  }
+  .l-hero__meta .glyph { color: var(--brand-accent); margin-right: 4px; }
+  .l-hero__meta .sep { color: var(--brand-fg-subtle); margin: 0 10px; }
+
+  /* --- buttons --- */
+  .c-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px;
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+    font-weight: 500;
+    letter-spacing: 0;
+    border: 1px solid transparent;
+    border-radius: var(--ds-r-1);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--ds-dur-1) var(--ds-ease-out),
+                border-color var(--ds-dur-1) var(--ds-ease-out),
+                color var(--ds-dur-1) var(--ds-ease-out);
+  }
+  .c-btn--primary {
+    background: var(--brand-accent);
+    color: var(--brand-accent-ink);
+    border-color: var(--brand-accent);
+  }
+  .c-btn--primary:hover {
+    background: transparent;
+    color: var(--brand-accent);
+  }
+  .c-btn--ghost {
+    background: transparent;
+    color: var(--brand-fg);
+    border-color: var(--brand-rule);
+  }
+  .c-btn--ghost:hover {
+    border-color: var(--brand-accent);
+    color: var(--brand-accent);
+  }
+
+  /* --- c-code --- */
+  .c-code {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-2);
+    line-height: 1.7;
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-rule);
+    border-radius: var(--ds-r-1);
+    overflow: hidden;
+  }
+  .c-code__head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px;
+    background: var(--brand-faint);
+    border-bottom: 1px solid var(--brand-rule);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-wide);
+    text-transform: uppercase;
+  }
+  .c-code__head .label { display: flex; align-items: center; gap: 10px; }
+  .c-code__head .label::before { content: var(--brand-mark); color: var(--brand-accent); text-transform: none; letter-spacing: 0; }
+  .c-code__head .lang { color: var(--brand-fg-subtle); font-size: var(--ds-fs-0); }
+  .c-code__body {
+    padding: var(--ds-sp-5) var(--ds-sp-6);
+    overflow-x: auto;
+  }
+  .c-code__body pre {
+    margin: 0; font-family: inherit; font-size: inherit; line-height: inherit;
+    color: var(--brand-fg); white-space: pre;
+  }
+  .c-code__meta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 8px 16px;
+    border-top: 1px solid var(--brand-rule);
+    background: var(--brand-faint);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-code__meta .ok { color: var(--brand-accent); }
+  .c-code__meta .hash { color: var(--brand-muted); }
+  /* syntax tokens — per brief §4 palette assignment */
+  .tk-key  { color: var(--brand-accent); font-weight: 500; }   /* keywords: offer, service, escrow, guarantee, probability */
+  .tk-type { color: var(--brand-accent-2); font-weight: 500; } /* type annotations: Π(n:Nat), Beta(94,6) */
+  .tk-id   { color: var(--brand-fg); }                          /* identifiers, addresses */
+  .tk-str  { color: var(--brand-fg); }                          /* string literals */
+  .tk-num  { color: var(--brand-fg); }                          /* numeric literals */
+  .tk-pun  { color: var(--brand-muted); }                       /* parens, colons */
+  .tk-cmp  { color: var(--brand-accent); }                       /* comparison operators (≥) inside type context */
+
+  /* --- section base --- */
+  .l-section {
+    padding: clamp(56px, 8vw, 96px) 0;
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .l-section__eyebrow {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-tracking-wide);
+    margin: 0 0 var(--ds-sp-3);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .l-section__eyebrow::before {
+    content: var(--brand-mark); color: var(--brand-accent); text-transform: none; letter-spacing: 0;
+  }
+  .l-section__title {
+    font-family: var(--brand-font-display);
+    font-weight: 400;
+    font-size: clamp(1.625rem, 3vw, 2.25rem);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    max-width: 36ch;
+    margin: 0 0 var(--ds-sp-7);
+  }
+
+  /* --- belief strip --- */
+  .l-belief {
+    background: var(--brand-surface);
+    border-top: 1px solid var(--brand-rule);
+    border-bottom: 1px solid var(--brand-rule);
+    padding: clamp(40px, 5vw, 64px) 0;
+  }
+  .l-belief__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .c-stat {
+    padding: 0 var(--ds-sp-5);
+    border-right: 1px solid var(--brand-rule);
+  }
+  .c-stat:last-child { border-right: 0; }
+  .c-stat__value {
+    font-family: var(--brand-font-display);
+    font-weight: 400;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    line-height: 1;
+    color: var(--brand-fg);
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .c-stat__label {
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+    color: var(--brand-fg);
+    line-height: 1.45;
+    margin: 0 0 8px;
+    max-width: 28ch;
+  }
+  .c-stat__source {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  @media (max-width: 880px) {
+    .l-belief__grid { grid-template-columns: 1fr 1fr; gap: var(--ds-sp-6) 0; }
+    .c-stat { border-right: 0; padding: 0 var(--ds-sp-4); }
+    .c-stat:nth-child(odd) { border-right: 1px solid var(--brand-rule); }
+  }
+
+  /* --- pillars (cols-3) --- */
+  .c-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ds-sp-5);
+  }
+  @media (max-width: 880px) { .c-feature-grid { grid-template-columns: 1fr; } }
+  .c-feature {
+    border: 1px solid var(--brand-rule);
+    background: transparent;
+    padding: var(--ds-sp-6);
+    display: flex; flex-direction: column; gap: var(--ds-sp-4);
+  }
+  .c-feature__num {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-wide);
+  }
+  .c-feature__title {
+    font-family: var(--brand-font-display);
+    font-weight: 500;
+    font-size: var(--ds-fs-3);
+    line-height: 1.3;
+    color: var(--brand-fg);
+    margin: 0;
+  }
+  .c-feature__body {
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+    line-height: 1.6;
+    color: var(--brand-fg);
+    margin: 0;
+  }
+  .c-feature__example {
+    margin-top: auto;
+    padding: 12px 14px;
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-rule);
+    border-radius: 2px;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    color: var(--brand-fg);
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+  .c-feature__example .tk-key  { color: var(--brand-accent); font-weight: 500; }
+  .c-feature__example .tk-type { color: var(--brand-accent-2); }
+  .c-feature__example .tk-pun  { color: var(--brand-muted); }
+
+  /* --- contrast block (JSON vs Sigil) --- */
+  .l-contrast {
+    background: var(--brand-surface);
+  }
+  .l-contrast__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--brand-rule);
+    border-radius: var(--ds-r-1);
+    overflow: hidden;
+    background: var(--brand-bg);
+  }
+  @media (max-width: 880px) { .l-contrast__grid { grid-template-columns: 1fr; } }
+  .l-contrast__col {
+    padding: var(--ds-sp-6);
+    border-right: 1px solid var(--brand-rule);
+  }
+  .l-contrast__col:last-child { border-right: 0; }
+  @media (max-width: 880px) {
+    .l-contrast__col { border-right: 0; border-bottom: 1px solid var(--brand-rule); }
+    .l-contrast__col:last-child { border-bottom: 0; }
+  }
+  .l-contrast__col--json { color: var(--brand-muted); }
+  .l-contrast__col--json .c-code__body pre { color: var(--brand-muted); }
+  .l-contrast__col--sigil { color: var(--brand-fg); }
+  .l-contrast__h {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-wide);
+    text-transform: uppercase;
+    margin: 0 0 var(--ds-sp-4);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .l-contrast__col--sigil .l-contrast__h { color: var(--brand-accent); }
+  .l-contrast__col--sigil .l-contrast__h::before { content: var(--brand-mark); margin-right: 8px; text-transform: none; letter-spacing: 0; }
+  .l-contrast__h .meta { color: var(--brand-fg-subtle); }
+  .l-contrast__code {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-2);
+    line-height: 1.7;
+    color: inherit;
+    margin: 0 0 var(--ds-sp-4);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .l-contrast__col--json .l-contrast__code .tk-key { color: var(--brand-muted); }
+  .l-contrast__col--json .l-contrast__code .tk-str { color: var(--brand-muted); }
+  .l-contrast__col--sigil .l-contrast__code .tk-key  { color: var(--brand-accent); font-weight: 500; }
+  .l-contrast__col--sigil .l-contrast__code .tk-type { color: var(--brand-accent-2); font-weight: 500; }
+  .l-contrast__col--sigil .l-contrast__code .tk-pun  { color: var(--brand-muted); }
+  .l-contrast__notes {
+    list-style: none; padding: 0; margin: 0;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    letter-spacing: var(--ds-tracking-mono);
+    line-height: 1.7;
+  }
+  .l-contrast__notes li {
+    padding-left: 16px; position: relative;
+  }
+  .l-contrast__col--json .l-contrast__notes li::before { content: "—"; position: absolute; left: 0; color: var(--brand-muted); }
+  .l-contrast__col--sigil .l-contrast__notes li::before { content: "+"; position: absolute; left: 0; color: var(--brand-accent); }
+  .l-contrast__col--sigil .l-contrast__notes { color: var(--brand-fg); }
+
+  /* --- AST tree (inline SVG section) --- */
+  .l-ast {
+    background: var(--brand-bg);
+  }
+  .l-ast__frame {
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-rule);
+    border-radius: var(--ds-r-1);
+    overflow: hidden;
+  }
+  .l-ast__frame-head {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--brand-rule);
+    background: var(--brand-faint);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-wide);
+    text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .l-ast__frame-head .label::before { content: var(--brand-mark); color: var(--brand-accent); margin-right: 10px; text-transform: none; letter-spacing: 0; }
+  .l-ast__source {
+    padding: var(--ds-sp-5) var(--ds-sp-6);
+    border-bottom: 1px solid var(--brand-rule);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-2);
+    color: var(--brand-fg);
+    line-height: 1.5;
+    background: var(--brand-bg-sunken);
+  }
+  .l-ast__source .tk-key { color: var(--brand-accent); font-weight: 500; }
+  .l-ast__source .tk-pun { color: var(--brand-muted); }
+  .l-ast__source .tk-str { color: var(--brand-fg); }
+  .l-ast__svg-wrap {
+    padding: var(--ds-sp-7) var(--ds-sp-5);
+    display: flex; justify-content: center;
+    overflow-x: auto;
+  }
+  .l-ast__svg { width: 100%; max-width: 760px; height: auto; }
+  .ast-node-bg { fill: var(--brand-bg); stroke: var(--brand-rule); stroke-width: 1; }
+  .ast-node-bg--root { stroke: var(--brand-accent); }
+  .ast-class { font-family: var(--brand-font-mono); font-size: 13px; fill: var(--brand-fg); font-weight: 500; letter-spacing: 0.01em; }
+  .ast-value { font-family: var(--brand-font-mono); font-size: 12px; fill: var(--brand-muted); letter-spacing: 0.01em; }
+  .ast-edge { stroke: var(--brand-rule); stroke-width: 1; fill: none; }
+  .ast-edge-label { font-family: var(--brand-font-mono); font-size: 10.5px; fill: var(--brand-muted); letter-spacing: 0.02em; }
+  .l-ast__legend {
+    padding: 12px 16px;
+    border-top: 1px solid var(--brand-rule);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    letter-spacing: var(--ds-tracking-mono);
+    display: flex; gap: 18px; flex-wrap: wrap;
+  }
+  .l-ast__legend .ok { color: var(--brand-accent); }
+
+  /* --- operator precedence ladder --- */
+  .l-ladder {
+    background: var(--brand-bg);
+  }
+  .c-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-rule);
+    border-radius: var(--ds-r-1);
+    overflow: hidden;
+  }
+  .c-table thead th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--brand-faint);
+    color: var(--brand-muted);
+    font-weight: 500;
+    font-size: var(--ds-fs-0);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-tracking-wide);
+    border-bottom: 1px solid var(--brand-border-strong);
+  }
+  .c-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--brand-rule);
+    color: var(--brand-fg);
+    vertical-align: top;
+  }
+  .c-table tbody tr:last-child td { border-bottom: 0; }
+  .c-table .col-level {
+    color: var(--brand-fg-subtle);
+    font-variant-numeric: tabular-nums;
+    width: 64px;
+    white-space: nowrap;
+  }
+  .c-table .col-op {
+    color: var(--brand-accent);
+    font-weight: 500;
+    width: 32%;
+  }
+  .c-table .col-assoc {
+    color: var(--brand-muted);
+    width: 96px;
+  }
+  .c-table .col-example {
+    color: var(--brand-fg);
+  }
+  .c-table tbody tr:hover td { background: color-mix(in oklab, var(--brand-accent) 4%, transparent); }
+
+  /* --- producers/consumers --- */
+  .l-trio {
+    background: var(--brand-bg);
+  }
+  .l-trio__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ds-sp-7);
+  }
+  @media (max-width: 880px) { .l-trio__grid { grid-template-columns: 1fr; gap: var(--ds-sp-6); } }
+  .l-trio__col h3 {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-wide);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0 0 var(--ds-sp-4);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .l-trio__col p {
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+    line-height: 1.65;
+    color: var(--brand-fg);
+    margin: 0 0 var(--ds-sp-3);
+  }
+  .l-trio__col p:last-child { margin-bottom: 0; }
+  .l-trio__col a {
+    color: var(--brand-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--brand-rule);
+    text-underline-offset: 3px;
+  }
+  .l-trio__col a:hover {
+    text-decoration-color: var(--brand-accent);
+    color: var(--brand-fg);
+  }
+
+  /* --- pricing teaser --- */
+  .l-pricing { background: var(--brand-bg); }
+  .l-pricing__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ds-sp-5);
+  }
+  @media (max-width: 880px) { .l-pricing__grid { grid-template-columns: 1fr; } }
+  .c-pricing-card {
+    border: 1px solid var(--brand-rule);
+    background: var(--brand-surface);
+    padding: var(--ds-sp-6);
+    display: flex; flex-direction: column; gap: var(--ds-sp-3);
+    border-radius: var(--ds-r-1);
+  }
+  .c-pricing-card__tier {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-tracking-wide);
+    margin: 0;
+  }
+  .c-pricing-card__price {
+    font-family: var(--brand-font-display);
+    font-weight: 400;
+    font-size: var(--ds-fs-6);
+    color: var(--brand-fg);
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin: 0;
+  }
+  .c-pricing-card__price small {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    color: var(--brand-muted);
+    font-weight: 400;
+    margin-left: 6px;
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-pricing-card__desc {
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+    color: var(--brand-fg);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .c-pricing-card__features {
+    list-style: none; padding: 0; margin: var(--ds-sp-3) 0 0;
+    display: grid; gap: 8px;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    color: var(--brand-fg);
+    border-top: 1px solid var(--brand-rule);
+    padding-top: var(--ds-sp-4);
+  }
+  .c-pricing-card__features li {
+    display: grid; grid-template-columns: 14px 1fr; gap: 10px;
+    line-height: 1.5;
+  }
+  .c-pricing-card__features li::before {
+    content: var(--brand-mark); color: var(--brand-accent); font-weight: 500;
+  }
+  .l-pricing__more {
+    margin-top: var(--ds-sp-5);
+    text-align: left;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-1);
+    color: var(--brand-fg);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .l-pricing__more a { color: var(--brand-fg); text-decoration: underline; text-decoration-color: var(--brand-rule); text-underline-offset: 3px; }
+  .l-pricing__more a:hover { text-decoration-color: var(--brand-accent); }
+
+  /* --- footer --- */
+  .c-footer {
+    background: var(--brand-bg-sunken);
+    border-top: 1px solid var(--brand-rule);
+    padding: clamp(56px, 8vw, 96px) 0 var(--ds-sp-6);
+  }
+  .c-footer__grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+    gap: var(--ds-sp-7);
+    margin-bottom: var(--ds-sp-8);
+  }
+  @media (max-width: 880px) { .c-footer__grid { grid-template-columns: 1fr 1fr; gap: var(--ds-sp-6); } }
+  @media (max-width: 540px) { .c-footer__grid { grid-template-columns: 1fr; } }
+  .c-footer__brand {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-3);
+    margin: 0 0 var(--ds-sp-4);
+  }
+  .c-footer__brand .mark { color: var(--brand-accent); }
+  .c-footer__brand .mark::before { content: var(--brand-mark); }
+  .c-footer__tagline {
+    font-family: var(--brand-font-display);
+    font-weight: 400;
+    font-size: var(--ds-fs-3);
+    line-height: 1.4;
+    color: var(--brand-fg);
+    margin: 0 0 var(--ds-sp-4);
+    max-width: 28ch;
+  }
+  .c-footer__legal-line {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    line-height: 1.6;
+    letter-spacing: var(--ds-tracking-mono);
+    max-width: 36ch;
+  }
+  .c-footer__col h5 {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-tracking-wide);
+    font-weight: 500;
+    margin: 0 0 var(--ds-sp-4);
+  }
+  .c-footer__col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .c-footer__col a {
+    color: var(--brand-fg); text-decoration: none;
+    font-family: var(--brand-font-body);
+    font-size: var(--ds-fs-2);
+  }
+  .c-footer__col a:hover { color: var(--brand-accent); }
+  .c-footer__col .self { color: var(--brand-fg-subtle); font-family: var(--brand-font-body); font-size: var(--ds-fs-2); display: inline-flex; align-items: baseline; gap: 6px; }
+  .c-footer__col .self::after {
+    content: "(this is the language reference)";
+    font-family: var(--brand-font-mono); font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle); letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-footer__col .glyph { color: var(--brand-fg-subtle); font-family: var(--brand-font-mono); font-size: 0.9em; margin-right: 8px; display: inline-block; min-width: 1ch; }
+  .c-footer__col a:hover .glyph { color: var(--brand-accent); }
+
+  /* book composite — footer strip, Variant A (per brief) */
+  .c-footer__books {
+    margin-bottom: var(--ds-sp-7);
+    padding: var(--ds-sp-5) 0;
+    border-top: 1px solid var(--brand-rule);
+    border-bottom: 1px solid var(--brand-rule);
+  }
+  .c-footer__books-row {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    align-items: center; gap: var(--ds-sp-6);
+  }
+  @media (max-width: 700px) { .c-footer__books-row { grid-template-columns: 1fr; gap: var(--ds-sp-4); } }
+  .c-footer__books-label {
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-tracking-wide);
+  }
+  .c-footer__books-titles {
+    display: flex; gap: var(--ds-sp-5); flex-wrap: wrap;
+    font-family: var(--brand-font-serif);
+    font-size: var(--ds-fs-2);
+    color: var(--brand-fg);
+    font-style: italic;
+  }
+  .c-footer__books-titles .sep { color: var(--brand-fg-subtle); margin: 0 0 0 calc(var(--ds-sp-5) * -0.5); }
+  .c-footer__books-titles a,
+  .c-footer__books-titles span { display: inline-flex; align-items: baseline; gap: 8px; color: inherit; text-decoration: none; }
+  .c-footer__books-titles a { transition: color 200ms ease; }
+  .c-footer__books-titles a:hover { color: var(--brand-accent, var(--brand-fg)); }
+  .c-footer__books-titles small { font-family: var(--brand-font-mono); font-style: normal; font-size: var(--ds-fs-0); color: var(--brand-fg-subtle); letter-spacing: var(--ds-tracking-mono); }
+
+  .c-footer__legal {
+    border-top: 1px solid var(--brand-rule);
+    padding-top: var(--ds-sp-5);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--ds-sp-4);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-muted);
+    letter-spacing: var(--ds-tracking-mono);
+  }
+  .c-footer__legal a { color: var(--brand-muted); text-decoration: none; }
+  .c-footer__legal a:hover { color: var(--brand-fg); }
+  .c-footer__disclaim {
+    margin-top: var(--ds-sp-3);
+    font-family: var(--brand-font-mono);
+    font-size: var(--ds-fs-0);
+    color: var(--brand-fg-subtle);
+    letter-spacing: var(--ds-tracking-mono);
+    max-width: 72ch;
+    line-height: 1.7;
+  }
+
+  /* --- focus & motion --- */
+  :focus-visible {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none; }
+  }
+
+  /* ===== DEV INTEGRATION — v0.10.71 Sigil landing round-1 =====
+     Round folder (rounds/round-1-2026-05-22/) is frozen; integration-only
+     responsive reconciliation lives here, not in the designer delivery.
+     The designer's collapse breakpoints fire, but grid items keep their
+     default min-width:auto (= min-content) and the 1fr tracks refuse to
+     shrink below the widest mono child — the page runs past the viewport
+     at <=980px (contrast columns + belief/stat grid). min-width:0 frees
+     the tracks; overflow-wrap breaks long inline mono tokens. Code bodies
+     already scroll internally (.c-code__body overflow-x:auto). */
+  @media (max-width: 1000px) {
+    .l-contrast__grid, .l-contrast__col, .l-belief__grid, .c-stat,
+    .c-feature-grid, .c-feature, .l-trio__grid { min-width: 0; }
+    .l-contrast__col, .c-stat { overflow-wrap: anywhere; }
+    /* code blocks scroll internally rather than widening the page; the
+       precedence-ladder table scrolls as a block on narrow viewports. */
+    pre { overflow-x: auto; }
+    .c-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────────────────────
+     NAV
+     ───────────────────────────────────────────────────────────── -->
+<header class="c-nav" data-screen-label="01 Nav">
+  <div class="c-nav__inner">
+    <a href="{{ brand.sigil }}" class="c-nav__brand" aria-label="Sigil home">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="wordmark">Sigil</span>
+      <span class="version">v0.5.0</span>
+    </a>
+    <nav class="c-nav__links" aria-label="Primary">
+      <a href="{{ brand.sigil }}/spec">Spec</a>
+      <a href="{{ brand.sigil }}/docs">Docs</a>
+      <a href="#tests">Tests</a>
+      <a href="#" aria-disabled="true" data-tbd="true" rel="external">GitHub</a>
+    </nav>
+    <a href="#" class="c-nav__cta" id="copy-install" aria-label="Copy install command">pip install sigil-core</a>
+  </div>
+</header>
+
+<!-- ─────────────────────────────────────────────────────────────
+     HERO  — signature move #1 (the hero visual IS the language)
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-hero" data-screen-label="02 Hero">
+  <div class="l-container">
+
+    <p class="l-hero__crumbs">Sigil <span class="v">v0.5.0</span> · 298 tests · 31 AST nodes · MIT-licensed</p>
+
+    <h1 class="l-hero__title">The language beneath your agents.</h1>
+
+    <p class="l-hero__lede">
+      Sigil is a formally specified language for machine-to-machine dialogue. Nine message types. Eleven-level operator precedence. Dependent types. Probability qualifiers. Round-trip serialization. 298 passing tests in the shipped parser. <code>pip install sigil-core</code> and run them yourself.
+    </p>
+
+    <figure class="l-hero__code-wrap c-code" role="figure" aria-label="Sigil v0.5.0 — agent negotiation message">
+      <div class="c-code__head">
+        <span class="label">a negotiation message in sigil v0.5.0</span>
+        <span class="lang">sigil</span>
+      </div>
+      <div class="c-code__body">
+<pre><span class="tk-pun">(</span><span class="tk-key">offer</span> <span class="tk-pun">:</span><span class="tk-key">from</span> <span class="tk-id">agent:0x7a3b…9f21</span> <span class="tk-pun">:</span><span class="tk-key">type</span> <span class="tk-id">Negotiate</span>
+  <span class="tk-pun">(</span><span class="tk-key">service</span> <span class="tk-pun">:</span><span class="tk-key">skill</span> <span class="tk-str">"translation"</span> <span class="tk-pun">:</span><span class="tk-key">pair</span> <span class="tk-pun">(</span><span class="tk-id">EN JA</span><span class="tk-pun">)</span>
+           <span class="tk-pun">:</span><span class="tk-key">quality</span> <span class="tk-cmp">≥</span> <span class="tk-num">0.94</span> <span class="tk-pun">:</span><span class="tk-key">price</span> <span class="tk-num">450</span> <span class="tk-id">$AETH</span><span class="tk-pun">)</span>
+  <span class="tk-pun">(</span><span class="tk-key">escrow</span> <span class="tk-pun">:</span><span class="tk-key">program</span> <span class="tk-id">aeth-escrow</span> <span class="tk-pun">:</span><span class="tk-key">timeout</span> <span class="tk-num">14d</span>
+          <span class="tk-pun">:</span><span class="tk-key">heal-bounty</span> <span class="tk-num">5</span> <span class="tk-id">$AETH</span><span class="tk-pun">)</span>
+  <span class="tk-pun">(</span><span class="tk-key">guarantee</span> <span class="tk-pun">:</span><span class="tk-key">type</span> <span class="tk-type">Π(n:Nat) (Completion n)</span><span class="tk-pun">)</span>
+  <span class="tk-pun">(</span><span class="tk-key">probability</span> <span class="tk-pun">:</span><span class="tk-key">success</span> <span class="tk-cmp">~</span> <span class="tk-type">Beta(94, 6)</span><span class="tk-pun">)</span><span class="tk-pun">)</span></pre>
+      </div>
+      <div class="c-code__meta">
+        <span class="ok">⊢ parses · 298 / 298 ✓</span>
+        <span class="hash">sha256:7d4a…b2c1</span>
+        <span>verified · test_whitepaper_examples.py:42</span>
+        <span>retrieved · 2026-05-22T09:00:00Z</span>
+      </div>
+    </figure>
+
+    <div class="l-hero__ctas">
+      <a href="{{ brand.sigil }}/spec" class="c-btn c-btn--primary">Read the spec</a>
+      <a href="#" aria-disabled="true" data-tbd="true" class="c-btn c-btn--ghost" rel="external">View on GitHub</a>
+    </div>
+
+    <p class="l-hero__meta">
+      <span class="glyph">⊢</span> v0.5.0 (298 tests)
+      <span class="sep">·</span>
+      <span class="glyph">⊢</span> 31 AST nodes
+      <span class="sep">·</span>
+      <span class="glyph">⊢</span> MIT-licensed
+      <span class="sep">·</span>
+      <span class="glyph">⊢</span> Pure Python
+    </p>
+
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     BELIEF STRIP  — four stats on the surface plateau
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-belief" data-screen-label="03 Belief strip" id="tests">
+  <div class="l-container">
+    <div class="l-belief__grid">
+      <dl class="c-stat">
+        <dd class="c-stat__value" data-numeric>298</dd>
+        <dt class="c-stat__label">Tests passing in v0.5.0</dt>
+        <dd class="c-stat__source">packages/sigil-core/tests/</dd>
+      </dl>
+      <dl class="c-stat">
+        <dd class="c-stat__value" data-numeric>31</dd>
+        <dt class="c-stat__label">AST node classes</dt>
+        <dd class="c-stat__source">sigil_core/ast_nodes.py</dd>
+      </dl>
+      <dl class="c-stat">
+        <dd class="c-stat__value" data-numeric>9</dd>
+        <dt class="c-stat__label">Message types: Q · A · N · C · E · P · V · O · X</dt>
+        <dd class="c-stat__source">sigil_core/lexer.py</dd>
+      </dl>
+      <dl class="c-stat">
+        <dd class="c-stat__value" data-numeric>11</dd>
+        <dt class="c-stat__label">Operator-precedence levels</dt>
+        <dd class="c-stat__source">sigil_core/parser.py</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     PILLARS  — signature move #2 (three differentiators)
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section" data-screen-label="04 Three pillars">
+  <div class="l-container">
+    <p class="l-section__eyebrow">What Sigil is</p>
+    <h2 class="l-section__title">Three things JSON cannot do, by construction.</h2>
+
+    <div class="c-feature-grid">
+      <article class="c-feature">
+        <p class="c-feature__num">01 / Dependent types</p>
+        <h3 class="c-feature__title">Dependent types in a communication language.</h3>
+        <p class="c-feature__body">
+          Express "a vector of exactly n elements" or "a positive integer" in the type signature of a message. <code>Π(n:Nat) Vec(n)</code>, <code>Σ(x:A) B(x)</code>, <code>{x:Int | x &gt; 0}</code> — all shipped, all tested.
+        </p>
+<pre class="c-feature__example"><span class="tk-pun">(</span><span class="tk-key">guarantee</span> <span class="tk-pun">:</span><span class="tk-key">type</span>
+  <span class="tk-type">Π(n:Nat) (Completion n)</span><span class="tk-pun">)</span></pre>
+      </article>
+
+      <article class="c-feature">
+        <p class="c-feature__num">02 / Probability</p>
+        <h3 class="c-feature__title">Probability as syntax, not metadata.</h3>
+        <p class="c-feature__body">
+          <code>P(market_crash | recession) = 0.73</code> is a parseable expression, not a string in a JSON field. Named distributions, conditional probability, Bayesian update operators — all in the grammar.
+        </p>
+<pre class="c-feature__example"><span class="tk-pun">(</span><span class="tk-key">probability</span>
+  <span class="tk-pun">:</span><span class="tk-key">success</span> ~ <span class="tk-type">Beta(94, 6)</span><span class="tk-pun">)</span></pre>
+      </article>
+
+      <article class="c-feature">
+        <p class="c-feature__num">03 / Round-trip</p>
+        <h3 class="c-feature__title">Round-trip serialization.</h3>
+        <p class="c-feature__body">
+          Parse → AST → serialize → parse again. Deterministic. Content-hashable. Two agents comparing the same message produce the same hash.
+        </p>
+<pre class="c-feature__example"><span class="tk-pun">&gt;&gt;&gt;</span> <span class="tk-key">parse</span><span class="tk-pun">(</span><span class="tk-key">serialize</span><span class="tk-pun">(</span><span class="tk-key">parse</span><span class="tk-pun">(</span>src<span class="tk-pun">)))</span>
+<span class="tk-pun">&lt;</span><span class="tk-key">Message</span> sha256:7d4a…b2c1<span class="tk-pun">&gt;</span></pre>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     CONTRAST  — signature move #3 (JSON vs Sigil, asymmetric weight)
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section l-contrast" data-screen-label="05 JSON vs Sigil">
+  <div class="l-container">
+    <p class="l-section__eyebrow">The upgrade</p>
+    <h2 class="l-section__title">The same agent message, twice. Read both columns and you have read the brief.</h2>
+
+    <div class="l-contrast__grid">
+
+      <div class="l-contrast__col l-contrast__col--json">
+        <p class="l-contrast__h">What JSON gives you <span class="meta">4 fields · no semantics</span></p>
+<pre class="l-contrast__code"><span class="tk-pun">{</span>
+  <span class="tk-str">"type"</span><span class="tk-pun">:</span> <span class="tk-str">"negotiate"</span><span class="tk-pun">,</span>
+  <span class="tk-str">"skill"</span><span class="tk-pun">:</span> <span class="tk-str">"translation"</span><span class="tk-pun">,</span>
+  <span class="tk-str">"confidence"</span><span class="tk-pun">:</span> <span class="tk-str">0.9</span><span class="tk-pun">,</span>
+  <span class="tk-str">"price"</span><span class="tk-pun">:</span> <span class="tk-str">450</span>
+<span class="tk-pun">}</span></pre>
+        <ul class="l-contrast__notes">
+          <li>no type for <code>confidence</code> — is it probability, certainty, or a vibe?</li>
+          <li>no constraint on <code>price</code> — currency, scale, jurisdiction unknown</li>
+          <li>no formal arbiter when two agents disagree on what a field means</li>
+          <li>no round-trip guarantee — re-serialize and the key order drifts</li>
+        </ul>
+      </div>
+
+      <div class="l-contrast__col l-contrast__col--sigil">
+        <p class="l-contrast__h">What Sigil gives you <span class="meta">parses · type-checks · round-trips</span></p>
+<pre class="l-contrast__code"><span class="tk-pun">(</span><span class="tk-key">offer</span> <span class="tk-pun">:</span><span class="tk-key">type</span> <span class="tk-id">Negotiate</span>
+  <span class="tk-pun">(</span><span class="tk-key">service</span> <span class="tk-pun">:</span><span class="tk-key">skill</span> <span class="tk-str">"translation"</span>
+           <span class="tk-pun">:</span><span class="tk-key">quality</span> <span class="tk-cmp">≥</span> 0.94
+           <span class="tk-pun">:</span><span class="tk-key">price</span> 450 <span class="tk-id">$AETH</span><span class="tk-pun">)</span>
+  <span class="tk-pun">(</span><span class="tk-key">probability</span> <span class="tk-pun">:</span><span class="tk-key">success</span> ~ <span class="tk-type">Beta(94, 6)</span><span class="tk-pun">))</span></pre>
+        <ul class="l-contrast__notes">
+          <li>type <code>Negotiate</code> chosen from the closed set of 9 message types</li>
+          <li>dependent constraint <code>quality ≥ 0.94</code> — the parser enforces it</li>
+          <li>probability is a first-class expression: <code>Beta(94, 6)</code> is a distribution, not a string</li>
+          <li>round-trip: parse → AST → serialize → identical content hash</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     AST TREE  — signature move #4 (what the parser produces)
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section l-ast" data-screen-label="06 AST tree">
+  <div class="l-container">
+    <p class="l-section__eyebrow">What the parser produces</p>
+    <h2 class="l-section__title">Every Sigil expression is an AST. Here is the tree for one small message.</h2>
+
+    <figure class="l-ast__frame">
+      <div class="l-ast__frame-head">
+        <span class="label">parse · ast — sigil_core/ast_nodes.py</span>
+        <span>orthogonal-edge layout</span>
+      </div>
+
+      <div class="l-ast__source">
+<pre><span class="tk-pun">(</span><span class="tk-key">query</span> <span class="tk-pun">:</span><span class="tk-key">from</span> <span class="tk-str">x</span> <span class="tk-pun">:</span><span class="tk-key">ask</span> <span class="tk-str">"hello"</span><span class="tk-pun">)</span></pre>
+      </div>
+
+      <div class="l-ast__svg-wrap" aria-hidden="true">
+        <svg class="l-ast__svg" viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg">
+          <!-- edges (orthogonal) -->
+          <!-- root → KeyValue :from -->
+          <path class="ast-edge" d="M 380 64 L 380 96 L 220 96 L 220 132"/>
+          <!-- root → KeyValue :ask -->
+          <path class="ast-edge" d="M 380 64 L 380 96 L 540 96 L 540 132"/>
+          <!-- KV(:from) → Identifier x -->
+          <path class="ast-edge" d="M 220 188 L 220 240 L 220 272"/>
+          <!-- KV(:ask) → StringLiteral "hello" -->
+          <path class="ast-edge" d="M 540 188 L 540 240 L 540 272"/>
+
+          <!-- edge labels (grammar productions) -->
+          <text class="ast-edge-label" x="280" y="112">message.content</text>
+          <text class="ast-edge-label" x="440" y="112">message.content</text>
+          <text class="ast-edge-label" x="234" y="256">keyvalue.value</text>
+          <text class="ast-edge-label" x="554" y="256">keyvalue.value</text>
+
+          <!-- root: Message -->
+          <rect class="ast-node-bg ast-node-bg--root" x="300" y="16" width="160" height="48" rx="2"/>
+          <text class="ast-class" x="380" y="38" text-anchor="middle">Message</text>
+          <text class="ast-value" x="380" y="55" text-anchor="middle">type = "query"</text>
+
+          <!-- KeyValue :from -->
+          <rect class="ast-node-bg" x="140" y="132" width="160" height="56" rx="2"/>
+          <text class="ast-class" x="220" y="154" text-anchor="middle">KeyValue</text>
+          <text class="ast-value" x="220" y="170" text-anchor="middle">key = :from</text>
+
+          <!-- KeyValue :ask -->
+          <rect class="ast-node-bg" x="460" y="132" width="160" height="56" rx="2"/>
+          <text class="ast-class" x="540" y="154" text-anchor="middle">KeyValue</text>
+          <text class="ast-value" x="540" y="170" text-anchor="middle">key = :ask</text>
+
+          <!-- Identifier x -->
+          <rect class="ast-node-bg" x="140" y="272" width="160" height="56" rx="2"/>
+          <text class="ast-class" x="220" y="294" text-anchor="middle">Identifier</text>
+          <text class="ast-value" x="220" y="310" text-anchor="middle">name = "x"</text>
+
+          <!-- StringLiteral "hello" -->
+          <rect class="ast-node-bg" x="460" y="272" width="160" height="56" rx="2"/>
+          <text class="ast-class" x="540" y="294" text-anchor="middle">StringLiteral</text>
+          <text class="ast-value" x="540" y="310" text-anchor="middle">value = "hello"</text>
+        </svg>
+      </div>
+
+      <div class="l-ast__legend">
+        <span><span class="ok">⊢</span> nodes labelled with AST class names from sigil_core/ast_nodes.py</span>
+        <span>edges labelled with grammar production · mono throughout</span>
+        <span>verified · test_parser_basic.py:18</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     OPERATOR PRECEDENCE LADDER  — signature move #5
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section l-ladder" data-screen-label="07 Precedence ladder">
+  <div class="l-container">
+    <p class="l-section__eyebrow">Eleven precedence levels</p>
+    <h2 class="l-section__title">From logical OR at the bottom to path access at the top. Pulled verbatim from <code style="font-family:var(--brand-font-mono);font-size:0.92em;color:var(--brand-fg);background:var(--brand-surface);padding:1px 6px;border:1px solid var(--brand-rule);border-radius:2px;letter-spacing:var(--ds-tracking-mono)">sigil_core/parser.py</code>.</h2>
+
+    <table class="c-table" role="table" aria-label="Operator precedence levels">
+      <thead>
+        <tr>
+          <th class="col-level" scope="col">Level</th>
+          <th class="col-op" scope="col">Operators</th>
+          <th class="col-assoc" scope="col">Assoc.</th>
+          <th class="col-example" scope="col">Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-level" data-numeric>01</td><td class="col-op">||  ∨  ⊕</td><td class="col-assoc">left</td><td class="col-example">p || q</td></tr>
+        <tr><td class="col-level" data-numeric>02</td><td class="col-op">&amp;&amp;  ∧</td><td class="col-assoc">left</td><td class="col-example">p &amp;&amp; q</td></tr>
+        <tr><td class="col-level" data-numeric>03</td><td class="col-op">→  ⇒</td><td class="col-assoc">right</td><td class="col-example">p → q</td></tr>
+        <tr><td class="col-level" data-numeric>04</td><td class="col-op">↔</td><td class="col-assoc">left</td><td class="col-example">p ↔ q</td></tr>
+        <tr><td class="col-level" data-numeric>05</td><td class="col-op">==  =/=  &lt;  &gt;  &lt;=  &gt;=  ∈  ⊆</td><td class="col-assoc">left</td><td class="col-example">x == y</td></tr>
+        <tr><td class="col-level" data-numeric>06</td><td class="col-op">::</td><td class="col-assoc">right</td><td class="col-example">h :: tail</td></tr>
+        <tr><td class="col-level" data-numeric>07</td><td class="col-op">+  -</td><td class="col-assoc">left</td><td class="col-example">a + b</td></tr>
+        <tr><td class="col-level" data-numeric>08</td><td class="col-op">*  /  %</td><td class="col-assoc">left</td><td class="col-example">a * b</td></tr>
+        <tr><td class="col-level" data-numeric>09</td><td class="col-op">^  **</td><td class="col-assoc">right</td><td class="col-example">x ^ 2</td></tr>
+        <tr><td class="col-level" data-numeric>10</td><td class="col-op">⊢  ⊣</td><td class="col-assoc">left</td><td class="col-example">Γ ⊢ A</td></tr>
+        <tr><td class="col-level" data-numeric>11</td><td class="col-op">.</td><td class="col-assoc">left</td><td class="col-example">x.field.subfield</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     PRODUCERS & CONSUMERS — three short prose blocks
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section l-trio" data-screen-label="08 Producers and consumers">
+  <div class="l-container">
+    <p class="l-section__eyebrow">Producers and consumers</p>
+    <h2 class="l-section__title">Who writes Sigil. Who reads it. How to embed it.</h2>
+
+    <div class="l-trio__grid">
+
+      <div class="l-trio__col">
+        <h3>Who makes Sigil</h3>
+        <p>The spec is the source of truth. The package <code style="font-family:var(--brand-font-mono);color:var(--brand-fg);font-size:0.92em">sigil-core</code> is the canonical reference implementation: lexer, parser, serializer, builder, 31 AST node classes, 298 tests. Pure Python, zero external dependencies beyond the standard library.</p>
+        <p>Language changes go through the SIP process — Sigil Improvement Proposals. The community reviews; v1.0.0 lands when the grammar is locked.</p>
+      </div>
+
+      <div class="l-trio__col">
+        <h3>Who reads Sigil</h3>
+        <p><a href="https://aetheria.top">Aetheria</a> — the on-chain civilization — uses Sigil for every agent-to-agent message. Largest production consumer. (Same engine; different brand. The civilization is not the language.)</p>
+        <p><a href="https://goaether.net">Aether</a> — the household AI cluster — coordinates devices in Sigil. <code style="font-family:var(--brand-font-mono);color:var(--brand-fg);font-size:0.92em">cake-core</code> parses Sigil to dispatch local inference. GreyAgent reads Sigil to route cross-module tasks.</p>
+      </div>
+
+      <div class="l-trio__col">
+        <h3>How to embed Sigil</h3>
+        <p>Sigil is a message format, not a framework. Any agent runtime that passes messages can use Sigil-encoded payloads. The grammar before the protocol; the parser before the framework.</p>
+        <p>First-class integration guides for LangGraph, AutoGen, CrewAI, MCP, and A2A land in <a href="{{ brand.sigil }}/docs">/docs</a> as they ship. Sigil is brand-neutral by design — it is the language Aetheria speaks, not an Aetheria sub-brand.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     PRICING TEASER — three cards
+     ───────────────────────────────────────────────────────────── -->
+<section class="l-section l-pricing" data-screen-label="09 Pricing teaser">
+  <div class="l-container">
+    <p class="l-section__eyebrow">Pricing</p>
+    <h2 class="l-section__title">Open-source first. Paid tiers wrap services, never the language.</h2>
+
+    <div class="l-pricing__grid">
+
+      <article class="c-pricing-card">
+        <p class="c-pricing-card__tier">Open Source</p>
+        <p class="c-pricing-card__price"><span data-numeric>$0</span><small>/ forever</small></p>
+        <p class="c-pricing-card__desc">The language itself, MIT-licensed. The parser, the serializer, the builder, every test in the suite. Free to embed, fork, ship.</p>
+        <ul class="c-pricing-card__features">
+          <li><span><code style="font-family:var(--brand-font-mono);font-size:0.95em">sigil-core</code> on PyPI · MIT licence</span></li>
+          <li><span>All 298 tests, all 31 AST nodes</span></li>
+          <li><span>Community Discord and GitHub Discussions</span></li>
+        </ul>
+      </article>
+
+      <article class="c-pricing-card">
+        <p class="c-pricing-card__tier">Developer Pro</p>
+        <p class="c-pricing-card__price"><span data-numeric>$19</span><small>/ month</small></p>
+        <p class="c-pricing-card__desc">For the engineer embedding Sigil in production. Adds the hosted type-checker, the Playground REPL, priority support.</p>
+        <ul class="c-pricing-card__features">
+          <li><span>Hosted type-checker service</span></li>
+          <li><span>Sigil Playground · web-based REPL</span></li>
+          <li><span>Priority support · 48-hour SLA</span></li>
+          <li><span>Early access to new language versions</span></li>
+        </ul>
+      </article>
+
+      <article class="c-pricing-card">
+        <p class="c-pricing-card__tier">Team</p>
+        <p class="c-pricing-card__price"><span data-numeric>$49</span><small>/ seat / month</small></p>
+        <p class="c-pricing-card__desc">For teams shipping multi-agent systems. Shared type registries, CI integration, team admin and analytics.</p>
+        <ul class="c-pricing-card__features">
+          <li><span>Everything in Developer Pro</span></li>
+          <li><span>Shared type registries across the team</span></li>
+          <li><span>CI / CD type-check step · GitHub Actions, GitLab CI</span></li>
+          <li><span>Team admin · usage analytics · Slack support</span></li>
+        </ul>
+      </article>
+
+    </div>
+
+    <p class="l-pricing__more"><a href="#" aria-disabled="true" data-tbd="true">See all tiers, including Enterprise →</a></p>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────────
+     FOOTER
+     ───────────────────────────────────────────────────────────── -->
+<footer class="c-footer" data-screen-label="10 Footer">
+  <div class="l-container">
+
+    <div class="c-footer__grid">
+
+      <div class="c-footer__col">
+        <p class="c-footer__brand">
+          <span class="mark" aria-hidden="true"></span>
+          <span>Sigil</span>
+        </p>
+        <p class="c-footer__tagline">The formal language for AI-to-AI communication.</p>
+        <p class="c-footer__legal-line">
+          Sigil is a communication language specification and parser. It does not provide financial, legal, or medical advice.
+        </p>
+      </div>
+
+      <nav class="c-footer__col" aria-label="Language">
+        <h5>Language</h5>
+        <ul>
+          <li><a href="{{ brand.sigil }}/spec">Spec</a></li>
+          <li><a href="{{ brand.sigil }}/docs">Docs</a></li>
+          <li><a href="#tests">Tests</a></li>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">SIPs</a></li>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">Playground</a></li>
+        </ul>
+      </nav>
+
+      <nav class="c-footer__col" aria-label="Community">
+        <h5>Community</h5>
+        <ul>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">GitHub</a></li>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">Discord</a></li>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">GitHub Discussions</a></li>
+          <li><a href="#" aria-disabled="true" data-tbd="true" rel="external">Zulip</a></li>
+          <li><a href="https://pypi.org/project/sigil-core/" rel="external">PyPI · sigil-core</a></li>
+        </ul>
+      </nav>
+
+      <nav class="c-footer__col" aria-label="Portfolio">
+        <h5>Portfolio</h5>
+        <ul>
+          <li><a href="{{ brand.aether }}"><span class="glyph">◈</span>Aether</a></li>
+          <li><a href="{{ brand.aetheria }}"><span class="glyph">◈</span>Aetheria</a></li>
+          <li><a href="{{ brand.albatross }}"><span class="glyph">◆</span>Albatross Desk</a></li>
+          <li><a href="{{ brand.bittontine }}"><span class="glyph">⊙</span>BitTontine</a></li>
+          <li><a href="{{ brand.bojio }}"><span class="glyph">◐</span>Bojio</a></li>
+          <li><a href="{{ brand.gilstead }}"><span class="glyph">▲</span>Gilstead</a></li>
+          <li><a href="{{ brand.greyhound }}"><span class="glyph">≫</span>Greyhound</a></li>
+          <li><a href="{{ brand.lyd }}"><span class="glyph">龍</span>Little Yellow Dragon</a></li>
+          <li><a href="{{ brand.oxley }}"><span class="glyph">◎</span>Oxley Data</a></li>
+          <li><span class="self"><span class="glyph" style="color:var(--brand-accent)">⊢</span>Sigil</span></li>
+          <li><a href="{{ brand.wallclip }}"><span class="glyph">⊐</span>wallclip</a></li>
+        </ul>
+      </nav>
+
+    </div>
+
+    <!-- Three-book composite — Variant A (footer strip) -->
+    <div class="c-footer__books" aria-label="Books from the same author">
+      <div class="c-footer__books-row">
+        <span class="c-footer__books-label">Books from the same author</span>
+        <div class="c-footer__books-titles">
+          <a href="https://www.amazon.com/dp/B0CZPMD22Z?utm_source=sigil-landing&amp;utm_medium=referral&amp;utm_campaign=footer-bookstrip" target="_blank" rel="noopener">The Cat Named Blue <small>fiction</small></a>
+          <a href="https://www.amazon.com/dp/B0D3M76QVM?utm_source=sigil-landing&amp;utm_medium=referral&amp;utm_campaign=footer-bookstrip" target="_blank" rel="noopener">Rise of the Little Yellow Dragons <small>parents</small></a>
+          <a href="https://www.amazon.com/dp/B0BK9D9TDR?utm_source=sigil-landing&amp;utm_medium=referral&amp;utm_campaign=footer-bookstrip" target="_blank" rel="noopener">Enduring Value <small>executives</small></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="c-footer__legal">
+      <span>© 2026 Sigil contributors · MIT-licensed</span>
+      <span>
+        <a href="#" aria-disabled="true" data-tbd="true">Privacy</a> · <a href="#" aria-disabled="true" data-tbd="true">Terms</a> · <a href="#" aria-disabled="true" data-tbd="true">Trademark</a>
+      </span>
+      <span>No client-side analytics. No telemetry. The parser does not phone home.</span>
+    </div>
+
+    <p class="c-footer__disclaim">
+      Sigil is a language, not an AI. The Sigil specification and the <code style="font-family:var(--brand-font-mono);color:var(--brand-fg-subtle);font-size:0.95em">sigil-core</code> parser are open source under the MIT licence. Paid tiers (Developer Pro, Team, Enterprise) carry standard SaaS terms; the open-source core remains free in perpetuity.
+    </p>
+
+  </div>
+</footer>
+
+<script>
+  // Copy install command to clipboard on click — no telemetry, no analytics.
+  (function(){
+    var btn = document.getElementById('copy-install');
+    if (!btn || !navigator.clipboard) return;
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      navigator.clipboard.writeText('pip install sigil-core').then(function(){
+        var orig = btn.textContent;
+        btn.textContent = 'copied to clipboard';
+        setTimeout(function(){ btn.textContent = orig; }, 1400);
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

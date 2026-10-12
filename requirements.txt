@@ -1,0 +1,3 @@
+# The landing and `sigil serve` (the [web] extra). The language itself
+# needs nothing beyond the standard library.
+flask

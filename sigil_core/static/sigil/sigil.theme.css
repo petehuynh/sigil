@@ -1,0 +1,92 @@
+/* =========================================================================
+   sigil.theme.css — Sigil brand override block
+   Loaded AFTER ds/tokens.css.
+   Verbatim from brief.md §2.
+
+   Discipline (grep-checkable):
+   - --brand-accent (sage-teal #6db89a) only on: the ⊢ mark in nav/footer;
+     passing-test indicators; one hero CTA fill; syntax-highlight keywords.
+   - --brand-accent-2 (manuscript gold #c4a35a) only on: version badges;
+     theorem names; formal-methods heritage citations; type-annotation
+     syntax tokens. Never on a CTA. Never on a hero title.
+   - Weight 700 is never used. Headings 500; body 400; display 300 (spec
+     hero only). Plex Mono leads in every display context.
+   ========================================================================= */
+
+:root {
+  /* Core palette — documentation-spec register, ink-dark mood */
+  --brand-bg:            #111318;   /* ink-dark — a librarian's desk at midnight; warmer than Aetheria's cold slate */
+  --brand-surface:       #181a21;   /* plateau for code blocks, AST diagrams */
+  --brand-bg-sunken:     #0a0c10;   /* code-block pockets, recessed regions */
+  --brand-fg:            #e8e4dc;   /* warm parchment — closer to manuscript than LED */
+  --brand-muted:         #8a9aaa;   /* steel blue-grey; secondary text, captions, identifiers */
+  --brand-fg-subtle:     #5a6678;   /* tertiary text, comments, fine attribution */
+  --brand-rule:          #1e2430;   /* rule lines, borders */
+  --brand-border-strong: #2c3340;   /* stronger rules for table headers, section dividers */
+  --brand-faint:         #14171e;   /* faint plateau (between bg and surface) */
+
+  /* Accents — two only */
+  --brand-accent:        #6db89a;   /* sage-teal — the colour of formal proofs; deliberately distinct from Bojio's Oxford Blue and Albatross's cyan */
+  --brand-accent-ink:    #111318;
+  --brand-accent-2:      #c4a35a;   /* manuscript gold — RESERVED for theorem names, version badges, formal-methods heritage. Used sparingly. */
+  --brand-accent-2-ink:  #111318;
+
+  /* Semantic */
+  --brand-success:       var(--brand-accent);   /* green sage = passing tests, valid parse, type-check success */
+  --brand-warn:          var(--brand-accent-2); /* gold = type warning, deprecation note */
+  --brand-danger:        #d47a5a;               /* warm terracotta — parse errors, type-check failures only */
+  --brand-info:          var(--brand-muted);
+
+  /* Typography — the language brand leads with monospace */
+  --brand-font-display:  "IBM Plex Mono", ui-monospace, monospace;
+  --brand-font-body:     "IBM Plex Sans", system-ui, sans-serif;
+  --brand-font-mono:     "IBM Plex Mono", ui-monospace, monospace;
+  --brand-font-serif:    "IBM Plex Serif", Georgia, serif;   /* spec document body, formal-methods essays */
+
+  /* Mark */
+  --brand-mark:          "\22A2";   /* ⊢ — the turnstile, the foundational symbol of formal logic ("proves" / "entails") */
+  --brand-mark-color:    var(--brand-accent);
+
+  /* Registers (read by tooling, documented here) */
+  --brand-imagery:       "documentation-first";
+  --brand-rhythm:        "spec-single-column";
+
+  color-scheme: dark;
+}
+
+/* =========================================================================
+   Light mode — round-10 (2026-05-28).
+   Cool parchment with sage undertone.
+   ========================================================================= */
+:root.theme--light {
+  --brand-bg:            #f4f5f8;
+  --brand-surface:       #ebedf2;
+  --brand-bg-sunken:     #dde0e8;
+  --brand-faint:         #f0f1f5;
+  --brand-fg:            #111318;
+  --brand-fg-subtle:     #4f5a6b;
+  --brand-muted:         #707a8c;
+  --brand-rule:          #cfd2dc;
+  --brand-border-strong: #a3a8b6;
+  --brand-accent:        #2f7558;
+  --brand-accent-ink:    #f4f5f8;
+  --brand-accent-2:      #8a6f1f;
+  --brand-surface-2:     var(--brand-bg-sunken);
+  color-scheme: light;
+}
+
+.theme--light {
+  --brand-success:       #2d7a3a;
+  --brand-warn:          #a8741f;
+  --brand-danger:        #a8302f;
+}
+
+html, body {
+  transition:
+    background var(--ds-dur-2) var(--ds-ease-out),
+    color var(--ds-dur-2) var(--ds-ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html, body { transition: none; }
+}

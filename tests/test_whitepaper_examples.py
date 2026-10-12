@@ -13,8 +13,11 @@ import pytest
 
 from sigil_core import parse
 
-# Path to whitepaper relative to this test file
-WHITEPAPER = Path(__file__).resolve().parents[3] / "docs" / "aetheria-whitepaper.md"
+# The package's own copy of Aetheria's (public) whitepaper, so the suite runs
+# the same in petehuynh/sigil as in the bojio monorepo — it used to read
+# ../../../docs/aetheria-whitepaper.md, which exists only inside the monorepo
+# (bojio clean break P-SI-3 S1). The monorepo pins this copy to its docs/.
+WHITEPAPER = Path(__file__).resolve().parent / "fixtures" / "aetheria-whitepaper.md"
 
 
 def _extract_sigil_blocks(md_path: Path) -> list[tuple[int, str]]:

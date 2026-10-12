@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sigil brand mark — round-10 (2026-05-29). Variant-B, currentColor. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+  <defs>
+    <symbol id="mark-sigil-24" viewBox="0 0 24 24">
+      <path d="M 6 4 L 6 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"></path>
+      <path d="M 6 12 L 20 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+  </defs>
+</svg>

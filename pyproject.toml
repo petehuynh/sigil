@@ -1,7 +1,8 @@
 [project]
 name = "sigil-core"
-version = "1.1.0"
+version = "1.2.0"
 description = "Sigil — the formal language for AI-to-AI communication"
+readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = []
@@ -15,10 +16,28 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.4"]
+# The landing block (sigil_core.server) — the language itself stays
+# dependency-free (clean break P-SI-1 S1).
+web = ["flask"]
+
+[project.scripts]
+# `sigil serve` (P-SI-1 S4) — needs the [web] extra
+sigil = "sigil_core.standalone:main"
+
+[project.entry-points."redwood.blocks"]
+sigil = "sigil_core.server:block"
 
 [project.urls]
-Homepage = "https://github.com/peterphuynh/sigil-core"
+Homepage = "https://github.com/petehuynh/sigil"
+Source = "https://github.com/petehuynh/sigil"
 
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sigil_core*"]
+
+[tool.setuptools.package-data]
+# The block's own screens travel with it (clean break P-SI-1 S1).
+sigil_core = ["templates/sigil/*.html", "static/sigil/*", "static/shared/*", "migrations/*.sql", "migrations/README.md"]

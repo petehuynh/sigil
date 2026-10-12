@@ -21,7 +21,11 @@ Quick start:
     text = serialize(m)
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
+
+#: How many tests the parser's suite (``tests/``) holds — the number Aetheria
+#: quotes. ``repo_tests/test_parser_count.py`` fails when it drifts.
+PARSER_TESTS = 303
 
 from .parser import parse, parse_one
 from .serializer import serialize, compact
@@ -45,6 +49,7 @@ from .ast_nodes import (
 __all__ = [
     # Core API
     "parse", "parse_one", "serialize", "compact", "msg", "tokenize",
+    "PARSER_TESTS",
     # Errors
     "LexError",
     # Builder
